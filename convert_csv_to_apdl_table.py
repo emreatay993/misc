@@ -33,22 +33,25 @@ def create_apdl_table(result_df, table_name="my_table"):
     apdl_lines.append(f"*DIM,{table_name},TABLE,{num_rows},{num_cols},1,{row_index_name},{col_index_name}\n\n")
     
     # Add row index values
-    apdl_lines.append(f"!{row_index_name} coordinates\n")
+    apdl_lines.append(f"!{row_index_name} Coordinates\n")
     for i, row_index_value in enumerate(result_df.index, start=1):
         apdl_lines.append(f"*SET,{table_name}({i},0,1),{row_index_value}\n")
+        apdl_lines.append(f"\n")
     
     # Add column index values
-    apdl_lines.append(f"!{col_index_name} coordinates\n")
+    apdl_lines.append(f"!{col_index_name} Coordinates\n")
     for j, col_index_value in enumerate(result_df.columns, start=1):
         apdl_lines.append(f"*SET,{table_name}(0,{j},1),{col_index_value}\n")
+        apdl_lines.append(f"\n")
     
     # Add table values
+    apdl_lines.append(f"!{table_name} Data Values\n")
     for i, row_index in enumerate(result_df.index, start=1):
         for j, col_index in enumerate(result_df.columns, start=1):
             data_value = result_df.loc[row_index, col_index]
             if pd.notna(data_value):  # Only write non-NaN values
                 apdl_lines.append(f"*SET,{table_name}({i},{j},1),{data_value}\n")
-    
+
     return apdl_lines
 
 # Main function to process the file and display the result
@@ -70,7 +73,5 @@ def main(file_path, table_name="my_table"):
 
 if __name__ == '__main__':
     file_path = "myfile.csv"
-    main(file_path)
+    main(file_path, "table1")
     
-    else:
-        print("Please provide the file path.")
