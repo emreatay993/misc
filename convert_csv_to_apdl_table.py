@@ -30,13 +30,15 @@ def create_apdl_table(result_df, table_name="my_table"):
     apdl_lines = []
     
     # DIM command
-    apdl_lines.append(f"*DIM,{table_name},{num_rows},{num_cols},1,{row_index_name},{col_index_name}\n")
+    apdl_lines.append(f"*DIM,{table_name},TABLE,{num_rows},{num_cols},1,{row_index_name},{col_index_name}\n\n")
     
     # Add row index values
+    apdl_lines.append(f"!{row_index_name} coordinates\n")
     for i, row_index_value in enumerate(result_df.index, start=1):
         apdl_lines.append(f"*SET,{table_name}({i},0,1),{row_index_value}\n")
     
     # Add column index values
+    apdl_lines.append(f"!{col_index_name} coordinates\n")
     for j, col_index_value in enumerate(result_df.columns, start=1):
         apdl_lines.append(f"*SET,{table_name}(0,{j},1),{col_index_value}\n")
     
@@ -67,8 +69,8 @@ def main(file_path, table_name="my_table"):
         print("No file selected")
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        file_path = sys.argv[1]
-        main(file_path)
+    file_path = "myfile.csv"
+    main(file_path)
+    
     else:
-        print("Please provide the file path as an argument.")
+        print("Please provide the file path.")
