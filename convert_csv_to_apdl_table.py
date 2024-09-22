@@ -28,8 +28,13 @@ def process_csv(file_path):
         coord2_idx = np.where(coord2_unique == row[coord_columns[1]])[0][0]
         array[coord1_idx, coord2_idx] = row[value_column]
 
-    # Convert the array to a DataFrame for better visualization (optional)
+    # Convert the array to a DataFrame for better visualization
     result_df = pd.DataFrame(array, index=coord1_unique, columns=coord2_unique)
+    
+    # Set names for the axes
+    result_df.index.name = coord_columns[0]  # Set the name of the row index (e.g., 'Y')
+    result_df.columns.name = coord_columns[1]  # Set the name of the columns (e.g., 'Z')
+
     return result_df
 
 # Main function to process the file and display the result
