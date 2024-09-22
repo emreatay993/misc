@@ -36,13 +36,13 @@ def create_apdl_table(result_df, table_name="my_table"):
     apdl_lines.append(f"!{row_index_name} Coordinates\n")
     for i, row_index_value in enumerate(result_df.index, start=1):
         apdl_lines.append(f"*SET,{table_name}({i},0,1),{row_index_value}\n")
-        apdl_lines.append(f"\n")
+    apdl_lines.append(f"\n")
     
     # Add column index values
     apdl_lines.append(f"!{col_index_name} Coordinates\n")
     for j, col_index_value in enumerate(result_df.columns, start=1):
         apdl_lines.append(f"*SET,{table_name}(0,{j},1),{col_index_value}\n")
-        apdl_lines.append(f"\n")
+    apdl_lines.append(f"\n")
     
     # Add table values
     apdl_lines.append(f"!{table_name} Data Values\n")
@@ -74,4 +74,3 @@ def main(file_path, table_name="my_table"):
 if __name__ == '__main__':
     file_path = "myfile.csv"
     main(file_path, "table1")
-    
