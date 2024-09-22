@@ -18,12 +18,13 @@ class FileSelector(QWidget):
         if file_path:
             self.file_path = file_path
         self.close()
+        QApplication.quit()  # Ensures the application closes after file selection
 
 def select_file():
-    app = QApplication(sys.argv)
-    selector = FileSelector()
-    app.exec_()  # Start the application event loop
-    return selector.file_path
+    app = QApplication(sys.argv)  # Create an instance of QApplication
+    selector = FileSelector()  # Create the file selector dialog
+    app.exec_()  # Run the dialog, but quit as soon as the file is selected
+    return selector.file_path  # Return the selected file path
 
 # Function to process the CSV file and convert it to a 2D array
 def process_csv(file_path):
@@ -63,7 +64,11 @@ def main():
     # Step 2: Process the selected CSV file
     if file_path:
         result_df = process_csv(file_path)
-		
+        
+        # Display the resulting DataFrame
+        import ace_tools as tools; tools.display_dataframe_to_user(name="Converted Table from CSV", dataframe=result_df)
+    else:
+        print("No file selected")
 
 if __name__ == '__main__':
     main()
