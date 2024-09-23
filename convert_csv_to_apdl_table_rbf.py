@@ -1,29 +1,42 @@
 import pandas as pd
 import numpy as np
-import sys
+from scipy.interpolate import Rbf
 
-# Function to process the CSV file and convert it to a 2D array
+# Function to process the CSV file and convert it to a 2D array with RBF interpolation
 def process_csv(file_path):
     df = pd.read_csv(file_path)
+    
     if df.shape[1] < 3 or 'cnof' not in df.columns:
         raise ValueError("CSV file must contain at least two coordinate columns and a 'cnof' column")
+    
     coord_columns = df.columns[:2]
     value_column = 'cnof'
+
+    # Extract the coordinates (Y, Z) and offset values (cnof)
+    Y = df[coord_columns[0]].values
+    Z = df[coord_columns[1]].values
+    offset = df[value_column].values
+    
+    # Create an RBF interpolator for smooth interpolation
+    rbf_interpolator = Rbf(Y, Z, offset, function='multiquadric')
+    
+    # Generate a grid of Y and Z values for interpolation
     coord1_unique = np.sort(df[coord_columns[0]].unique())
     coord2_unique = np.sort(df[coord_columns[1]].unique())
-    array = np.full((len(coord1_unique), len(coord2_unique)), np.nan)
-    for _, row in df.iterrows():
-        coord1_idx = np.where(coord1_unique == row[coord_columns[0]])[0][0]
-        coord2_idx = np.where(coord2_unique == row[coord_columns[1]])[0][0]
-        array[coord1_idx, coord2_idx] = row[value_column]
-    result_df = pd.DataFrame(array, index=coord1_unique, columns=coord2_unique)
+    coord1_grid, coord2_grid = np.meshgrid(coord1_unique, coord2_unique)
+    
+    # Interpolate the offset values on this grid
+    interpolated_offsets = rbf_interpolator(coord1_grid, coord2_grid)
+    
+    # Create a new DataFrame with the interpolated values
+    result_df = pd.DataFrame(interpolated_offsets, index=coord1_unique, columns=coord2_unique)
     result_df.index.name = coord_columns[0]
     result_df.columns.name = coord_columns[1]
+    
     return result_df
 
 # Function to create APDL table
 def create_apdl_table(result_df, table_name="my_table"):
-    # APDL header
     row_index_name = result_df.index.name
     col_index_name = result_df.columns.name
     num_rows, num_cols = result_df.shape
