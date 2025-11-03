@@ -1,0 +1,98 @@
+# encoding: utf-8
+# 2023 R2
+SetScriptVersion(Version="23.2.142")
+# Import the 'os' module to manage file paths
+# This module is standard in IronPython and is used in the scripting guide examples [cite: 2032]
+import os
+
+# --- 1. Get the script's own directory ---
+# __file__ is a special variable holding the path to this .wbjn script
+script_path = os.path.abspath(__file__)
+
+# Get the directory *containing* the script
+journalDir = os.path.dirname(script_path)
+
+# (HIGHLY RECOMMENDED) Change the application's CWD to the journal's directory
+# This makes all relative file paths (like finding your .wbpz) work correctly.
+os.chdir(journalDir)
+
+archiveToOpen = None
+archiveName = None
+
+print journalDir
+
+# --- 1. Find the .wbpz archive in the directory ---
+# Loop through all files in the directory [cite: 2043]
+for f in os.listdir(journalDir):
+    # Find the first file that ends with .wbpz
+    # but does NOT end with _solved.wbpz (to avoid re-processing)
+    if f.lower().endswith(".wbpz") and not f.lower().endswith("_solved.wbpz"):
+        # Create the full file path [cite: 2046]
+        archiveToOpen = os.path.join(journalDir, f)
+        archiveName = f
+        break # Stop after finding the first one
+
+if not archiveToOpen:
+    print "Error: No .wbpz archive found in the journal directory."
+    print "Please place this .wbjn file in the same directory as your .wbpz file."
+else:
+    print "Found archive: " + archiveName
+    
+    # --- 2. Open (Unarchive) the project ---
+    # The Unarchive command restores a project from an archive[cite: 3680].
+    # By not specifying 'ProjectPath', it unarchives to the default temporary location.
+    try:
+        Unarchive(ArchivePath=archiveToOpen, Overwrite=True)
+        print "Project unarchived and opened successfully."
+    except Exception as e:
+        print "Error: Failed to open archive. " + str(e)
+        # Stop the script if opening failed
+        raise
+
+    # --- 3. Update all systems ---
+    # The Update() command updates all components in the project [cite: 1979]
+    print "Updating all systems... This may take a while."
+    try:
+        Update()
+    except Exception as e:
+        print "An error occurred during the update: " + str(e)
+
+    # --- 4. Check if update was successful ---
+    # IsProjectUpToDate() checks the project state [cite: 2064, 3672]
+    if IsProjectUpToDate():
+        print "Update successful."
+        
+        # --- 5. Archive the solved project ---
+        
+        # Get the base name of the original archive (e.g., "my_project")
+        baseName = os.path.splitext(archiveToOpen)[0]
+        
+        # Create the new archive name with the "_solved" suffix
+        solvedArchivePath = baseName + "_solved.wbpz"
+        
+        # Check if a file with the new name already exists and remove it
+        # This is necessary as Archive() doesn't have an 'Overwrite' argument [cite: 3659]
+        # This 'os.remove' pattern is also seen in the guide's examples [cite: 2249]
+        if os.path.exists(solvedArchivePath):
+            print "Removing existing solved archive: " + solvedArchivePath
+            os.remove(solvedArchivePath)
+            
+        print "Archiving project to: " + solvedArchivePath
+        
+        # Archive the project with user files and result files included
+        # IncludeUserFiles=True (for user files)
+        # IncludeSkippedFiles=True (for result files)
+        # [cite: 3659, 3660]
+        Archive(
+            FilePath=solvedArchivePath,
+            IncludeUserFiles=True,
+            IncludeSkippedFiles=True
+        )
+        
+        print "Archiving complete."
+        
+    else:
+        print "Error: Project update failed or was interrupted."
+        print "The project will not be archived."
+
+print "Script finished."
