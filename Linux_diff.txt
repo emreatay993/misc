@@ -1,0 +1,4 @@
+diff -U0 \
+  <(sed 's/^[[:space:]]*//;s/[[:space:]]*$//;/^$/d' file1.txt) \
+  <(sed 's/^[[:space:]]*//;s/[[:space:]]*$//;/^$/d' file2.txt) \
+| grep -E '^(<|>) '
